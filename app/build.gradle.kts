@@ -34,7 +34,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = "copychat.App"
+    mainClass = "copychat.CopyChat"
 }
 
 tasks.named<Test>("test") {

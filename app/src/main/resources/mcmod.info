@@ -1,0 +1,16 @@
+[
+{
+  "modid": "copychat",
+  "name": "Copy Chat",
+  "description": "ctrl/shift click messages to copy them",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["davishi"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
