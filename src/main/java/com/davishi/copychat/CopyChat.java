@@ -2,8 +2,12 @@ package com.davishi.copychat;
 
 
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiNewChat;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.StringUtils;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -32,20 +36,26 @@ public class CopyChat
     @EventHandler
     public void init(FMLInitializationEvent event) {MinecraftForge.EVENT_BUS.register(this);}
 
-    /*@SubscribeEvent
-    public void preDrawScreen(GuiNewChat g) {
-        ChatLine chat = event;
-        if(g.getChatOpen())
-            hovered = g.getChatComponent(Mouse.getX(), Mouse.getY());
-        else hovered = null;
-    }*/
+    private ChatComponentText hovered = null;
 
     @SubscribeEvent
-    public void copy(GuiNewChat g) {
-        if (GuiScreen.isCtrlKeyDown() && g.getChatOpen()){
+    public void preDrawScreen(GuiScreenEvent.DrawScreenEvent.Pre event) {
+        GuiNewChat chat = Minecraft.getMinecraft().ingameGUI.getChatGUI();
+        if(chat.getChatOpen())
+            hovered = new ChatComponentText(chat.getChatComponent(Mouse.getX(),Mouse.getY()).getUnformattedText());
+        else hovered = null;
+    }
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void copy(GuiScreenEvent.MouseInputEvent.Pre e) {
+        if(!(e.gui instanceof GuiChat)) return;
+        GuiNewChat gui = Minecraft.getMinecraft().ingameGUI.getChatGUI();
+        if (GuiScreen.isCtrlKeyDown() && gui.getChatOpen()){
             int button = Mouse.getEventButton();
-            if (g.getChatComponent(Mouse.getX(), Mouse.getY()) != null && button == 0)
-                GuiScreen.setClipboardString(g.getChatComponent(Mouse.getX(), Mouse.getY()).getUnformattedText());
+            if (button != 0) return;
+            if (gui.getChatComponent(Mouse.getX(), Mouse.getY()) != null) {
+                ChatComponentText component = hovered;
+                GuiScreen.setClipboardString(StringUtils.stripControlCodes(component.getUnformattedText()));
+            }
         }
     }
 
