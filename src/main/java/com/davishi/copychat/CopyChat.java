@@ -1,29 +1,21 @@
 package com.davishi.copychat;
 
-
-
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiNewChat;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.StringUtils;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.event.ClickEvent;
+import net.minecraft.util.*;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
-import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-
-import net.minecraft.client.gui.ChatLine;
-import net.minecraft.client.gui.GuiChat;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.network.play.server.S02PacketChat;
-import net.minecraft.util.IChatComponent;
-import net.minecraftforge.client.event.GuiOpenEvent;
-import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent;
-import org.lwjgl.input.Mouse;
 
 @Mod(modid = CopyChat.MODID, version = CopyChat.VERSION, name = CopyChat.MODNAME, clientSideOnly = true)
 public class CopyChat
@@ -32,31 +24,44 @@ public class CopyChat
     public static final String MODID = "copychat";
     public static final String VERSION = "0.1";
 
+    //initializes the command
+    @Mod.Instance
+    public static CopyChat instance;
+
+    @EventHandler
+    public void preInit(FMLPreInitializationEvent event) {
+        ClientCommandHandler.instance.registerCommand(new copy());
+    }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {MinecraftForge.EVENT_BUS.register(this);}
 
-    private ChatComponentText hovered = null;
-
-    @SubscribeEvent
-    public void preDrawScreen(GuiScreenEvent.DrawScreenEvent.Pre event) {
-        GuiNewChat chat = Minecraft.getMinecraft().ingameGUI.getChatGUI();
-        if(chat.getChatOpen())
-            hovered = new ChatComponentText(chat.getChatComponent(Mouse.getX(),Mouse.getY()).getUnformattedText());
-        else hovered = null;
-    }
     @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void copy(GuiScreenEvent.MouseInputEvent.Pre e) {
-        if(!(e.gui instanceof GuiChat)) return;
-        GuiNewChat gui = Minecraft.getMinecraft().ingameGUI.getChatGUI();
-        if (GuiScreen.isCtrlKeyDown() && gui.getChatOpen()){
-            int button = Mouse.getEventButton();
-            if (button != 0) return;
-            if (gui.getChatComponent(Mouse.getX(), Mouse.getY()) != null) {
-                ChatComponentText component = hovered;
-                GuiScreen.setClipboardString(StringUtils.stripControlCodes(component.getUnformattedText()));
+    public void onChatReceived(ClientChatReceivedEvent e) {
+        if (e.type == 2) return;
+        e.message.setChatStyle(new ChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "//copy " + e.message.getUnformattedText())));
+    }
+
+    //copy the argument
+    public static class copy extends CommandBase {
+        @Override
+        public String getCommandName() { return "/copy"; }
+
+        @Override
+        public String getCommandUsage(ICommandSender sender) { return "//copy <arg>"; }
+
+        @Override
+        public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+            if(GuiScreen.isCtrlKeyDown()) {
+                String out = "";
+                for(String s : args)
+                    out += s + " ";
+                out = out.substring(0,out.length() - 1);
+                GuiScreen.setClipboardString(StringUtils.stripControlCodes(out));
+                Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Copied Message!"));
             }
         }
+        @Override
+        public boolean canCommandSenderUseCommand(ICommandSender sender) { return true; }
     }
-
 }
