@@ -1,7 +1,7 @@
 [
 {
   "modid": "copychat",
-  "name": "Copy Chat",
+  "name": "Copy-Chat",
   "description": "copies minecraft chat text",
   "version": "${version}",
   "mcversion": "${mcversion}",

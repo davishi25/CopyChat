@@ -36,7 +36,7 @@ public class CopyChat
     @EventHandler
     public void init(FMLInitializationEvent event) {MinecraftForge.EVENT_BUS.register(this);}
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onChatReceived(ClientChatReceivedEvent e) {
         if (e.type == 2) return;
         e.message.setChatStyle(new ChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "//copy " + e.message.getUnformattedText())));
